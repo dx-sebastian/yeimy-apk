@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YEIMY: Magnetic Strike — Descarga</title>
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #2a2018 0%, #14100c 70%);
+    font-family: 'Bahnschrift', 'Segoe UI', system-ui, sans-serif; color: #fff; text-align: center; padding: 24px;
+  }
+  h1 {
+    font-size: clamp(3rem, 12vw, 6rem); letter-spacing: 0.06em; font-weight: 800;
+    background: linear-gradient(180deg, #ffb84d, #ff7a26); -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+  .sub { letter-spacing: 0.55em; color: #bfae97; margin: 8px 0 40px; font-size: clamp(0.7rem, 2.5vw, 1rem); }
+  .btn {
+    display: inline-block; padding: 20px 54px; font-size: 1.5rem; font-weight: 800; text-decoration: none;
+    color: #14100c; background: linear-gradient(180deg, #ffc266, #ff8a2e); border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(255, 138, 46, 0.35); transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 40px rgba(255, 138, 46, 0.5); }
+  .meta { margin-top: 18px; color: #8f8271; font-size: 0.95rem; }
+  .card {
+    margin-top: 48px; max-width: 620px; background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 16px; padding: 26px 30px; text-align: left; line-height: 1.65; font-size: 0.98rem; color: #d8cdbd;
+  }
+  .card h2 { font-size: 1.05rem; letter-spacing: 0.12em; color: #ffb84d; margin-bottom: 10px; }
+  .card ul { padding-left: 20px; }
+  code { background: rgba(255,255,255,0.09); padding: 1px 7px; border-radius: 6px; }
+</style>
+</head>
+<body>
+  <h1>YEIMY</h1>
+  <div class="sub">M A G N E T I C&nbsp;&nbsp;S T R I K E</div>
+  <a class="btn" href="yeimy.apk" download>⬇&nbsp; DESCARGAR APK</a>
+  <div class="meta">Android 7.0+ (ARM64) · instalación directa · beta del laboratorio 1v1</div>
+
+  <div class="card">
+    <h2>CÓMO INSTALAR</h2>
+    <ul>
+      <li>Descarga el APK y ábrelo; permite <em>instalar apps desconocidas</em> si Android lo pide.</li>
+      <li><strong>LAN 1v1:</strong> un jugador toca <code>CREAR SERVIDOR</code>; el otro, en la misma red WiFi o en el hotspot del primero, toca <code>UNIRSE A SERVIDOR</code>. El invitado controla al defensor.</li>
+      <li>Controles táctiles: joystick izquierdo para moverte · <code>TIRO</code> mantener para apuntar y soltar para lanzar · <code>ACCIÓN</code> amague / auto-pase · <code>PARRY</code> · <code>DASH</code>. En el saque: arrastra hacia abajo = potencia, lateral = curva, botones <code>ALT ±</code> para la altura.</li>
+    </ul>
+  </div>
+</body>
+</html>
