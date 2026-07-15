@@ -1,72 +1,354 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="bg-black">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YEIMY: Magnetic Strike — Descarga</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#000000" />
+<meta name="description" content="YEIMY: Magnetic Strike es un duelo 1v1 de puntería, reflejos y construcción para Android." />
+<title>YEIMY — Magnetic Strike</title>
 <style>
-  :root { color-scheme: dark; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: radial-gradient(ellipse at 50% 30%, #2a2018 0%, #14100c 70%);
-    font-family: 'Bahnschrift', 'Segoe UI', system-ui, sans-serif; color: #fff; text-align: center; padding: 24px;
+  :root {
+    --bg: #050505;
+    --fg: #f5f2ea;
+    --muted: rgba(245, 242, 234, 0.6);
+    --accent: #e8b04b;
+    --accent-press: #f0c675;
   }
-  h1 {
-    font-size: clamp(3rem, 12vw, 6rem); letter-spacing: 0.06em; font-weight: 800;
-    background: linear-gradient(180deg, #ffb84d, #ff7a26); -webkit-background-clip: text; background-clip: text; color: transparent;
-    animation: pulse 2.4s ease-in-out infinite;
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
-  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-  .sub { letter-spacing: 0.55em; color: #bfae97; margin: 8px 0 40px; font-size: clamp(0.7rem, 2.5vw, 1rem); }
-  .btn {
-    display: inline-block; padding: 20px 54px; font-size: 1.5rem; font-weight: 800; text-decoration: none;
-    color: #14100c; background: linear-gradient(180deg, #ffc266, #ff8a2e); border-radius: 14px;
-    box-shadow: 0 8px 30px rgba(255, 138, 46, 0.35); transition: transform .15s ease, box-shadow .15s ease;
+
+  /* Stage: locked to a mobile portrait frame, centered on any screen */
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
   }
-  .btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 40px rgba(255, 138, 46, 0.5); }
-  .meta { margin-top: 18px; color: #8f8271; font-size: 0.95rem; }
-  .fallback { margin-top: 14px; color: #bfae97; font-size: 0.92rem; }
-  .fallback a { color: #ffc266; font-weight: 700; }
-  .chrome-btn {
-    display: inline-block; margin-top: 16px; padding: 11px 22px; border: 1px solid #ffc266;
-    border-radius: 10px; color: #ffc266; font-weight: 800; text-decoration: none;
+
+  .frame {
+    position: relative;
+    width: 100vw;
+    height: 100dvh;
+    max-width: 480px;
+    height: 100%;
+    max-height: 100dvh;
+    overflow: hidden;
+    background: #000;
   }
-  .card {
-    margin-top: 48px; max-width: 620px; background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 16px; padding: 26px 30px; text-align: left; line-height: 1.65; font-size: 0.98rem; color: #d8cdbd;
+
+  .frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.9) 100%);
   }
-  .card h2 { font-size: 1.05rem; letter-spacing: 0.12em; color: #ffb84d; margin-bottom: 10px; }
-  .card ul { padding-left: 20px; }
-  code { background: rgba(255,255,255,0.09); padding: 1px 7px; border-radius: 6px; }
+
+  /* Two stacked videos crossfaded for a seamless loop */
+  .video-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  #videoA { opacity: 1; }
+  #videoB { opacity: 0; }
+
+  /* Content overlay */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: calc(env(safe-area-inset-top) + 28px) 24px calc(env(safe-area-inset-bottom) + 28px);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(-8px);
+    animation: fadeIn 0.9s ease 0.2s forwards;
+  }
+  .brand {
+    font-size: 22px;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--fg);
+    font-weight: 800;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.7);
+    padding-left: 0.42em;
+  }
+
+  .bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .intro {
+    text-align: center;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.9);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: fadeIn 1s ease 0.5s forwards;
+  }
+
+  .tag {
+    margin-bottom: 8px;
+    color: var(--accent-press);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+
+  .description {
+    max-width: 390px;
+    margin: 0 auto;
+    color: rgba(245, 242, 234, 0.9);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  /* Huge download button */
+  .cta {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 76px;
+    padding: 0 24px;
+    border: none;
+    border-radius: 22px;
+    background: var(--accent);
+    color: #1a1206;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 10px 40px rgba(232, 176, 75, 0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+    transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 1s ease 0.7s forwards;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .cta:active {
+    transform: scale(0.975);
+    background: var(--accent-press);
+    box-shadow: 0 6px 24px rgba(232, 176, 75, 0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+  .cta svg { width: 28px; height: 28px; flex-shrink: 0; }
+
+  .version {
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0;
+    animation: fadeIn 1s ease 0.9s forwards;
+  }
+
+  .alternative {
+    pointer-events: auto;
+    color: rgba(245, 242, 234, 0.72);
+    font-size: 12px;
+    text-align: center;
+    text-underline-offset: 3px;
+  }
+
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+  /* Tap-to-start (needed if autoplay is blocked) */
+  .poster-gate {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(2px);
+    color: var(--fg);
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.4s ease;
+  }
+  .poster-gate .play {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+  .poster-gate .ring {
+    width: 74px; height: 74px; border-radius: 50%;
+    border: 2px solid rgba(245,242,234,0.6);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .poster-gate .ring svg { width: 30px; height: 30px; margin-left: 4px; }
+  .poster-gate.hidden { opacity: 0; pointer-events: none; }
+
+  @media (max-height: 700px) {
+    .overlay { padding-top: calc(env(safe-area-inset-top) + 18px); padding-bottom: calc(env(safe-area-inset-bottom) + 18px); }
+    .bottom { gap: 10px; }
+    .description { font-size: 13px; }
+    .cta { min-height: 64px; font-size: 19px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .top, .intro, .cta, .version { animation-duration: 0.01ms; animation-delay: 0ms; }
+  }
 </style>
 </head>
 <body>
-  <h1>YEIMY</h1>
-  <div class="sub">M A G N E T I C&nbsp;&nbsp;S T R I K E</div>
-  <a class="btn" href="https://github.com/dx-sebastian/yeimy-apk/releases/download/v0.1.4/yeimy.apk" download="yeimy.apk">⬇&nbsp; DESCARGAR APK</a>
-  <div class="meta">v0.1.4 · Android 7.1+ (ARM64) · instalación directa · beta del laboratorio 1v1</div>
-  <div class="fallback">Si usas un navegador integrado y no inicia, <a href="https://github.com/dx-sebastian/yeimy-apk/releases/tag/v0.1.4">abre la descarga alternativa</a> en Chrome y toca <strong>yeimy.apk</strong>.</div>
-  <a class="chrome-btn" href="intent://github.com/dx-sebastian/yeimy-apk/releases/download/v0.1.4/yeimy.apk#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=https%3A%2F%2Fgithub.com%2Fdx-sebastian%2Fyeimy-apk%2Freleases%2Ftag%2Fv0.1.4;end">ABRIR EN CHROME</a>
+  <div class="stage">
+    <div class="frame">
+      <video id="videoA" class="video-layer" muted playsinline preload="auto" webkit-playsinline poster="./poster.jpg" aria-hidden="true"></video>
+      <video id="videoB" class="video-layer" muted playsinline preload="auto" webkit-playsinline aria-hidden="true"></video>
 
-  <div class="card">
-    <h2>NOVEDADES 0.1.4</h2>
-    <ul>
-      <li>LAN 1v1 reparado: el jugador 2 ya puede moverse, sacar, recoger y colocar piezas, atacar, apuntar y lanzar.</li>
-      <li>Sincronización autoritativa del mapa, torre, piezas, reloj, progreso y cambio de roles para ambos jugadores.</li>
-      <li>Controles LAN enviados a 30 Hz con decimales compatibles con Android en español y acciones fiables ante paquetes repetidos o perdidos.</li>
-      <li>Nuevo tutorial animado de dedo que enseña el gesto de saque, su potencia, curva y altura.</li>
-      <li>Joystick de tiro más preciso: recorrido mayor, sensibilidad reducida, zona muerta radial y respuesta suavizada.</li>
-      <li>Partida LAN equilibrada: se eliminan para el anfitrión efectos locales que no podía activar el invitado.</li>
-      <li>Conserva las mejoras táctiles, escalado de GUI, materiales Android, sonido de entrada y navegación con <code>ATRÁS</code>.</li>
-    </ul>
-    <br>
-    <h2>CÓMO INSTALAR</h2>
-    <ul>
-      <li>Descarga el APK y ábrelo; permite <em>instalar apps desconocidas</em> si Android lo pide.</li>
-      <li><strong>LAN 1v1:</strong> un jugador toca <code>CREAR SERVIDOR</code>; el otro, en la misma red WiFi o en el hotspot del primero, toca <code>UNIRSE A SERVIDOR</code>. El invitado es el jugador 2 y cambia entre atacante y constructor durante la partida.</li>
-      <li>Controles táctiles: joystick izquierdo para moverte · <code>TIRO</code> mantener/arrastrar/soltar · <code>COLOCAR</code> cuando eres constructor · <code>PARRY</code> · <code>DASH</code>. En el saque: arrastra hacia abajo = potencia, lateral = curva, botones <code>ALT ±</code> para la altura.</li>
-    </ul>
+      <div class="overlay">
+        <div class="top">
+          <span class="brand">YEIMY</span>
+        </div>
+
+        <div class="bottom">
+          <div class="intro">
+            <div class="tag">Magnetic Strike · Laboratorio 1v1</div>
+            <p class="description">Un duelo de puntería, reflejos y construcción. Lanza, bloquea, recoge piezas y levanta tu torre antes que tu rival, en solitario o por LAN.</p>
+          </div>
+          <a class="cta" id="downloadBtn" href="https://github.com/dx-sebastian/yeimy-apk/releases/download/v0.1.4/yeimy.apk" download="yeimy.apk" aria-label="Descargar YEIMY 0.1.4 para Android">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/>
+            </svg>
+            Descargar juego
+          </a>
+          <div class="version">Versión 0.1.4 · Android 7.1+ · ARM64</div>
+          <a class="alternative" href="https://github.com/dx-sebastian/yeimy-apk/releases/tag/v0.1.4">Descarga alternativa</a>
+        </div>
+      </div>
+
+      <div class="poster-gate" id="gate">
+        <div class="play">
+          <div class="ring">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          Toca para entrar
+        </div>
+      </div>
+    </div>
   </div>
+
+<script>
+(function () {
+  // Progressive sources: browser picks WebM or the fast-start MP4
+  var SOURCES = [
+    { src: "./game.webm", type: "video/webm" },
+    { src: "./game.mp4",  type: "video/mp4" }
+  ];
+  var CROSSFADE = 0.7;   // seconds of overlap that hides the loop seam
+  var RATE = 1.0;
+
+  var a = document.getElementById("videoA");
+  var b = document.getElementById("videoB");
+  var gate = document.getElementById("gate");
+
+  function pickSource() {
+    var probe = document.createElement("video");
+    for (var i = 0; i < SOURCES.length; i++) {
+      if (probe.canPlayType(SOURCES[i].type)) return SOURCES[i].src;
+    }
+    return SOURCES[SOURCES.length - 1].src;
+  }
+
+  var SRC = pickSource();
+  a.src = SRC; b.src = SRC;
+  a.playbackRate = RATE; b.playbackRate = RATE;
+
+  var active = a;
+  var standby = b;
+  var duration = 0;
+  var switching = false;
+
+  function onMeta() {
+    if (a.readyState >= 1 && b.readyState >= 1 && !duration) {
+      duration = a.duration || b.duration || 0;
+    }
+  }
+  a.addEventListener("loadedmetadata", onMeta);
+  b.addEventListener("loadedmetadata", onMeta);
+
+  // Smooth seamless-loop crossfade driver
+  function tick() {
+    if (duration && !switching) {
+      var remaining = duration - active.currentTime;
+      if (remaining <= CROSSFADE) {
+        switching = true;
+        standby.currentTime = 0;
+        var p = standby.play();
+        if (p && p.catch) p.catch(function(){});
+      }
+    }
+
+    if (switching && duration) {
+      var t = standby.currentTime / CROSSFADE;
+      if (t >= 1) {
+        active.style.opacity = 0;
+        standby.style.opacity = 1;
+        active.pause();
+        var tmp = active; active = standby; standby = tmp;
+        switching = false;
+      } else {
+        var e = t * t * (3 - 2 * t);
+        standby.style.opacity = e.toFixed(3);
+        active.style.opacity = (1 - e).toFixed(3);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function start() {
+    var p = active.play();
+    if (p && p.then) {
+      p.then(function () {
+        gate.classList.add("hidden");
+      }).catch(function () {});
+    } else {
+      gate.classList.add("hidden");
+    }
+    requestAnimationFrame(tick);
+  }
+
+  window.addEventListener("load", start);
+  gate.addEventListener("click", function () {
+    active.play();
+    gate.classList.add("hidden");
+  });
+})();
+</script>
 </body>
 </html>
